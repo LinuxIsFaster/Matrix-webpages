@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Red Matrix Digital Rain</title>
+    <style>
+        /* Reset and layout */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body, html {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background-color: #000000; /* Solid Black Background */
+            font-family: 'Courier New', Courier, monospace;
+        }
+
+        /* Canvas occupies the full screen background */
+        canvas {
+            display: block;
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: 1;
+        }
+
+        /* Centered Text Overlay */
+        .overlay {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 2;
+            text-align: center;
+            color: #ffffff;
+            text-shadow: 0 0 8px rgba(255, 0, 0, 0.6), 0 0 20px rgba(255, 0, 0, 0.4);
+            pointer-events: none;
+            user-select: none;
+        }
+
+        .overlay h1 {
+            font-size: 3rem;
+            letter-spacing: 8px;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            animation: pulse 3s ease-in-out infinite;
+        }
+
+        .overlay p {
+            font-size: 1.2rem;
+            letter-spacing: 4px;
+            color: #ff8888;
+            opacity: 0.8;
+        }
+
+        /* Red pulsing effect for the overlay text */
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); text-shadow: 0 0 8px rgba(255, 0, 0, 0.6); }
+            50% { transform: scale(1.02); text-shadow: 0 0 15px rgba(255, 0, 0, 0.9), 0 0 30px rgba(255, 0, 0, 0.4); }
+        }
+    </style>
+</head>
+<body>
+
+    <canvas id="matrixCanvas"></canvas>
+
+    <div class="overlay">
+        <h1>System Malfunction</h1>
+        <p>Entering the Red Zone.</p>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('matrixCanvas');
+        const ctx = canvas.getContext('2d');
+
+        // Set full screen dimensions
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
+
+        // Matrix characters (Katakana, Latin alphabets, and numbers)
+        const matrixChars = "ABCDEFGHIJKLMNOPQRSTUVWXYZｦｧｨｩｪｫｬｭｮｯｰｱｲｳｴｵｶｷｸｹｺｻｼｽｾｿﾀﾁﾂﾃﾄﾅﾆﾇﾈﾉﾊﾋﾌﾍﾎﾏﾐﾑﾒﾓﾔﾕﾖﾗﾘﾙﾚﾛﾜﾝ1234567890:+-*<>|";
+        const alphabet = matrixChars.split("");
+
+        const fontSize = 16;
+        let columns = Math.floor(canvas.width / fontSize);
+
+        // Track vertical position of falling streams
+        let rainDrops = [];
+        for (let x = 0; x < columns; x++) {
+            rainDrops[x] = Math.random() * -100; 
+        }
+
+        function draw() {
+            // Paints black with low opacity to create the fading trail over the black background
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            ctx.font = fontSize + 'px monospace';
+
+            for (let i = 0; i < rainDrops.length; i++) {
+                const text = alphabet[Math.floor(Math.random() * alphabet.length)];
+                const xPos = i * fontSize;
+                const yPos = rainDrops[i] * fontSize;
+
+                // Base trail style: Crimson / Red
+                ctx.fillStyle = '#ff0000'; 
+                ctx.shadowBlur = 0; 
+
+                // Glowing Head Character Logic:
+                // If it is the leading edge of the stream, make it bright light-red/white with a strong red glow
+                if (Math.random() > 0.97 || yPos > 0) {
+                    ctx.fillStyle = '#ffcccc'; // Soft white-pink core
+                    ctx.shadowColor = '#ff0000'; // Pure red glow aura
+                    ctx.shadowBlur = 10;
+                }
+
+                ctx.fillText(text, xPos, yPos);
+
+                // Reset drop to the top randomly once it hits the bottom
+                if (yPos > canvas.height && Math.random() > 0.975) {
+                    rainDrops[i] = 0;
+                }
+
+                // Move drop downwards
+                rainDrops[i]++;
+            }
+        }
+
+        // Dynamically adjust columns on window resize
+        window.addEventListener('resize', () => {
+            const oldColumns = columns;
+            columns = Math.floor(canvas.width / fontSize);
+            if (columns > oldColumns) {
+                for (let i = oldColumns; i < columns; i++) {
+                    rainDrops[i] = Math.random() * -100;
+                }
+            }
+        });
+
+        // Run loop at ~30 FPS
+        setInterval(draw, 33);
+    </script>
+</body>
+</html>
